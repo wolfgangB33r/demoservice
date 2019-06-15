@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -122,9 +123,21 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := 8080
+	if len(os.Args) > 1 {
+		arg := os.Args[1]
+		fmt.Printf("Start demo service at port: %s\n", arg)
+		i1, err := strconv.Atoi(arg)
+		if err == nil {
+			port = i1
+		}
+	} else {
+		fmt.Printf("Start demo service at default port: %d\n", port)
+	}
+
 	http.HandleFunc("/", sayHello)
 	http.HandleFunc("/config", receiveConfig)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		panic(err)
 	}
 }
