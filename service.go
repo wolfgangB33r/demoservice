@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os"
 	"strings"
@@ -25,6 +26,8 @@ type crashAnomalyConfig struct {
 }
 
 type resourceAnomalyConfig struct {
+	Severity int
+	Count    int
 }
 
 type callee struct {
@@ -63,15 +66,16 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "What I did:\n")
 	// first call all callees we have in the config with the multiplicity given
 	for _, element := range conf.Callees {
-		fmt.Printf("Call %s %d times\n", element.Adr, element.Count)
 		for i := 0; i < element.Count; i++ {
 			res, err := http.Get(element.Adr)
 			if err == nil {
 				defer res.Body.Close()
 			}
 		}
+		fmt.Fprintf(w, "Called %s %d times\n", element.Adr, element.Count)
 	}
 	// then check if we should crash the process
 	if conf.CrashConfig.Code != 0 {
@@ -81,15 +85,38 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	if conf.SlowdownConfig.SlowdownMillis != 0 && conf.SlowdownConfig.Count > 0 {
 		time.Sleep(time.Duration(conf.SlowdownConfig.SlowdownMillis) * time.Millisecond)
 		conf.SlowdownConfig.Count = conf.SlowdownConfig.Count - 1
+		fmt.Fprintf(w, "Sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
 	}
 	// then check if we should increase resource consumption
-
+	if conf.ResourceConfig.Severity != 0 && conf.ResourceConfig.Count > 0 {
+		for c := 0; c <= conf.ResourceConfig.Severity; c++ {
+			m1 := [100][100]int{}
+			for i := 0; i < 100; i++ {
+				for j := 0; j < 100; j++ {
+					m1[i][j] = rand.Int()
+				}
+			}
+		}
+		fmt.Fprintf(w, "Allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
+		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
+	}
 	// then check if the should return an error response code
-
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
-	message = "Hello " + message
-	w.Write([]byte(message))
+	if conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0 {
+		if conf.ErrorConfig.ResponseCode == 500 {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+		} else if conf.ErrorConfig.ResponseCode == 400 {
+			w.WriteHeader(http.StatusForbidden)
+			w.Write([]byte("400 - Forbidden!"))
+		}
+		fmt.Fprintf(w, "Returned an error response code\n")
+		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1
+	} else {
+		message := r.URL.Path
+		message = strings.TrimPrefix(message, "/")
+		message = "Finally returned " + message
+		w.Write([]byte(message))
+	}
 	//fmt.Printf("GET / request processed.")
 	defer r.Body.Close()
 }
