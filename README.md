@@ -57,3 +57,10 @@ Callees let you specify the callees this service calls with each service request
 }
 ```
 
+## Example topologies
+
+The example1.sh shell script copies the generic demo service into 6 individual services. Starts those 6 services on the same machine on 6 different ports and
+configures them to call them each other in the topology shown by Dynatrace below:
+
+![](example.png)
+
