@@ -55,5 +55,5 @@ Callees let you specify the callees this service calls with each service request
     { "Adr" : "http://localhost:8090", "Count" : 3 }
   ]
 }
-```json
+```
 
