@@ -7,12 +7,12 @@ pkill s6
 
 sleep 5
 
-cp ./service s1
-cp ./service s2
-cp ./service s3
-cp ./service s4
-cp ./service s5
-cp ./service s6
+cp ../../service s1
+cp ../../service s2
+cp ../../service s3
+cp ../../service s4
+cp ../../service s5
+cp ../../service s6
 
 ./s1 8001&
 ./s2 8002&
