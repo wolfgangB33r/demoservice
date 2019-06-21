@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -69,18 +70,23 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 func sayHello(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "What I did:\n")
 	// first call all callees we have in the config with the multiplicity given
+	failures := false
 	for _, element := range conf.Callees {
 		for i := 0; i < element.Count; i++ {
 			res, err := http.Get(element.Adr)
 			if err == nil {
 				defer res.Body.Close()
+				if res.StatusCode != 200 {
+					failures = true
+				}
 			}
 		}
 		fmt.Fprintf(w, "Called %s %d times\n", element.Adr, element.Count)
 	}
 	// then check if we should crash the process
 	if conf.CrashConfig.Code != 0 {
-		os.Exit(conf.CrashConfig.Code)
+		log.Fatalf("Exiting")
+		//os.Exit(conf.CrashConfig.Code)
 	}
 	// then check if we should add a delay
 	if conf.SlowdownConfig.SlowdownMillis != 0 && conf.SlowdownConfig.Count > 0 {
@@ -102,13 +108,13 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
 	}
 	// then check if the should return an error response code
-	if conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0 {
-		if conf.ErrorConfig.ResponseCode == 500 {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
-		} else if conf.ErrorConfig.ResponseCode == 400 {
+	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
+		if conf.ErrorConfig.ResponseCode == 400 {
 			w.WriteHeader(http.StatusForbidden)
 			w.Write([]byte("400 - Forbidden!"))
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
 		}
 		fmt.Fprintf(w, "Returned an error response code\n")
 		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1

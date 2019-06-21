@@ -47,7 +47,7 @@ Callees let you specify the callees this service calls with each service request
   },
   "ResourceConfig" : {
     Severity 5
-	  Count    2
+    Count    2
   },
   "Callees" : [
     { "Adr" : "http://www.example.com", "Count" : 10 },

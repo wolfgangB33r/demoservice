@@ -1,3 +1,12 @@
+pkill s1
+pkill s2
+pkill s3
+pkill s4
+pkill s5
+pkill s6
+
+sleep 5
+
 cp ./service s1
 cp ./service s2
 cp ./service s3
@@ -12,7 +21,7 @@ cp ./service s6
 ./s5 8005&
 ./s6 8006&
 
-sleep 20
+sleep 5
 
 curl -i -X POST \
    -H "Content-Type:application/json" \
