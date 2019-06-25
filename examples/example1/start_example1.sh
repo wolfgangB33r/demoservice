@@ -1,25 +1,25 @@
-pkill s1
-pkill s2
-pkill s3
-pkill s4
-pkill s5
-pkill s6
+pkill customerAPI 
+pkill sideService 
+pkill calcService 
+pkill restService 
+pkill recomService 
+pkill modelService 
 
 sleep 5
 
-cp ../../demoservice s1
-cp ../../demoservice s2
-cp ../../demoservice s3
-cp ../../demoservice s4
-cp ../../demoservice s5
-cp ../../demoservice s6
+cp ../../demoservice customerAPI 
+cp ../../demoservice sideService 
+cp ../../demoservice calcService 
+cp ../../demoservice restService 
+cp ../../demoservice recomService 
+cp ../../demoservice modelService 
 
-./s1 8001&
-./s2 8002&
-./s3 8003&
-./s4 8004&
-./s5 8005&
-./s6 8006&
+./customerAPI 8001&
+./sideService 8002&
+./calcService 8003&
+./restService 8004&
+./recomService 8005&
+./modelService 8006&
 
 sleep 5
 
