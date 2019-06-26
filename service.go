@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -85,7 +84,8 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	}
 	// then check if we should crash the process
 	if conf.CrashConfig.Code != 0 {
-		log.Fatalf("Exiting")
+		//log.Fatalf("Exiting")
+		panic("a problem")
 		//os.Exit(conf.CrashConfig.Code)
 	}
 	// then check if we should add a delay
