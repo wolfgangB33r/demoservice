@@ -7,11 +7,11 @@ cp ../../demoservice balancer
 cp ../../demoservice worker 
 
 ./balancer 9000&
-./worker 9100&
-./worker 9200&
-./worker 9300&
-./worker 9400&
-./worker 9500&
+DT_IGNOREDYNAMICPORT=true DT_NODE_ID=1 ./worker 9100&
+DT_IGNOREDYNAMICPORT=true DT_NODE_ID=2 ./worker 9200&
+DT_IGNOREDYNAMICPORT=true DT_NODE_ID=3 ./worker 9300&
+DT_IGNOREDYNAMICPORT=true DT_NODE_ID=4 ./worker 9400&
+DT_IGNOREDYNAMICPORT=true DT_NODE_ID=5 ./worker 9500&
 
 sleep 5
 
