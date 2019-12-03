@@ -1,25 +1,17 @@
-pkill customerAPI 
-pkill sideService 
-pkill calcService 
-pkill restService 
-pkill recomService 
-pkill modelService 
+pkill balancer 
+pkill worker 
 
 sleep 5
 
-cp ../../demoservice customerAPI 
-cp ../../demoservice sideService 
-cp ../../demoservice calcService 
-cp ../../demoservice restService 
-cp ../../demoservice recomService 
-cp ../../demoservice modelService 
+cp ../../demoservice balancer 
+cp ../../demoservice worker 
 
-./customerAPI 8001&
-./sideService 8002&
-./calcService 8003&
-./restService 8004&
-./recomService 8005&
-./modelService 8006&
+./balancer 9000&
+./worker 9100&
+./worker 9200&
+./worker 9300&
+./worker 9400&
+./worker 9500&
 
 sleep 5
 
@@ -28,32 +20,11 @@ curl -i -X POST \
    -d \
 '{
   "Callees" : [
-    { "Adr" : "http://localhost:8002", "Count" : 2 },
-    { "Adr" : "http://localhost:8003", "Count" : 6 },
-    { "Adr" : "http://www.example.com", "Count" : 1 }
+    { "Adr" : "http://localhost:9100", "Count" : 1 },
+    { "Adr" : "http://localhost:9200", "Count" : 1 },
+    { "Adr" : "http://localhost:9300", "Count" : 1 },
+    { "Adr" : "http://localhost:9400", "Count" : 1 },
+    { "Adr" : "http://localhost:9500", "Count" : 1 }
   ]
 }' \
- 'http://localhost:8001/config'
-
-curl -i -X POST \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-  "Callees" : [
-    { "Adr" : "http://localhost:8004", "Count" : 2 },
-    { "Adr" : "http://localhost:8005", "Count" : 6 },
-    { "Adr" : "http://www.example.com", "Count" : 1 }
-  ]
-}' \
- 'http://localhost:8003/config'
-
-curl -i -X POST \
-   -H "Content-Type:application/json" \
-   -d \
-'{
-  "Callees" : [
-    { "Adr" : "http://localhost:8006", "Count" : 2 },
-    { "Adr" : "http://www.example.com", "Count" : 1 }
-  ]
-}' \
- 'http://localhost:8005/config'
+ 'http://localhost:9000/config'
