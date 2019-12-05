@@ -25,6 +25,7 @@ curl -i -X POST \
     { "Adr" : "http://localhost:9300", "Count" : 1 },
     { "Adr" : "http://localhost:9400", "Count" : 1 },
     { "Adr" : "http://localhost:9500", "Count" : 1 }
-  ]
+  ],
+  "Balanced" : true
 }' \
  'http://localhost:9000/config'

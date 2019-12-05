@@ -42,9 +42,11 @@ type config struct {
 	CrashConfig    crashAnomalyConfig
 	ResourceConfig resourceAnomalyConfig
 	Callees        []callee
+	Balanced       bool
 }
 
 var conf config
+var reqcount int
 
 func receiveConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -66,21 +68,29 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 }
 
+func handleIcon(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+}
+
 func sayHello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "What I did:\n")
+	reqcount++
+	fmt.Fprintf(w, "What I did %d:\n", reqcount)
 	// first call all callees we have in the config with the multiplicity given
 	failures := false
-	for _, element := range conf.Callees {
-		for i := 0; i < element.Count; i++ {
-			res, err := http.Get(element.Adr)
-			if err == nil {
-				defer res.Body.Close()
-				if res.StatusCode != 200 {
-					failures = true
+
+	for ci, element := range conf.Callees {
+		if !conf.Balanced || reqcount%len(conf.Callees) == ci {
+			for i := 0; i < element.Count; i++ {
+				res, err := http.Get(element.Adr)
+				if err == nil {
+					defer res.Body.Close()
+					if res.StatusCode != 200 {
+						failures = true
+					}
 				}
 			}
+			fmt.Fprintf(w, "Called %s %d times\n", element.Adr, element.Count)
 		}
-		fmt.Fprintf(w, "Called %s %d times\n", element.Adr, element.Count)
 	}
 	// then check if we should crash the process
 	if conf.CrashConfig.Code != 0 {
@@ -124,7 +134,6 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		message = "Finally returned " + message
 		w.Write([]byte(message))
 	}
-	//fmt.Printf("GET / request processed.")
 	defer r.Body.Close()
 }
 
@@ -142,6 +151,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", sayHello)
+	http.HandleFunc("/favicon.ico", handleIcon)
 	http.HandleFunc("/config", receiveConfig)
 	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		panic(err)

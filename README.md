@@ -32,6 +32,8 @@ Push a http POST request to /config on your started service.
 Count always represents the number of service requests that suffer from that anomaly, e.g.: a count of 5 means the next 5 service requests are affected.
 A crash anomaly kills the service process with the given exit code. The resource anomaly allocates a matrix of 100x100 elements multiplied by the given severity. 
 Callees let you specify the callees this service calls with each service request. Specifying callees allows you to build dynamic multi-level service call trees.
+In case the attribute 'Balanced' is set to 'true', the callees are equally iterated with each request. 
+
 ```json
 {
   "ErrorConfig" : {
@@ -53,13 +55,22 @@ Callees let you specify the callees this service calls with each service request
     { "Adr" : "http://www.example.com", "Count" : 10 },
     { "Adr" : "http://www.orf.at", "Count" : 3 },
     { "Adr" : "http://localhost:8090", "Count" : 3 }
-  ]
+  ],
+  "Balanced" : true
 }
 ```
 
 ## Example topology
 
-The **example1.sh** shell script copies the generic demo service into 6 individual services. Starts those 6 services on the same machine on 6 different ports and configures them to call them each other in the topology shown by Dynatrace below:
+The **example1/start.sh** shell script copies the generic demo service into 6 individual services. Starts those 6 services on the same machine on 6 different ports and configures them to call them each other in the topology shown by Dynatrace below:
 
 ![](examples/example1/example1.png)
+
+## Balanced example
+
+The **balancer/start.sh** shell script copies the generic demo service into 6 individual services. Starts those 6 services on the same machine on 6 different ports and configures them to form a balancer and worker pool topology, as it is shown by Dynatrace below:
+
+![](examples/balancer/balancer.png)
+
+
 
