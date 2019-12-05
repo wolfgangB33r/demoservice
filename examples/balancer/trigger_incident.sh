@@ -14,6 +14,8 @@ curl -i -X POST \
 
 # then, slowdown the remaining 2 workers because of the load shift
 
+sleep 80
+
 curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
