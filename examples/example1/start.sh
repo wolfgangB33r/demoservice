@@ -15,11 +15,11 @@ cp ../../demoservice recomService
 cp ../../demoservice modelService
 
 ./customerAPI 8080&
-./sideService 8082&
-./calcService 8083&
-./restService 8084&
-./recomService 8085&
-./modelService 8086&
+./sideService 8081&
+./calcService 8082&
+./restService 8083&
+./recomService 8084&
+./modelService 8085&
 
 sleep 5
 
@@ -28,8 +28,8 @@ curl -i -X POST \
    -d \
 '{
   "Callees" : [
-    { "Adr" : "http://localhost:8082", "Count" : 2 },
-    { "Adr" : "http://localhost:8083", "Count" : 3 },
+    { "Adr" : "http://localhost:8081", "Count" : 2 },
+    { "Adr" : "http://localhost:8082", "Count" : 3 },
     { "Adr" : "http://www.example.com", "Count" : 1 }
   ]
 }' \
@@ -40,20 +40,20 @@ curl -i -X POST \
    -d \
 '{
   "Callees" : [
+    { "Adr" : "http://localhost:8083", "Count" : 2 },
     { "Adr" : "http://localhost:8084", "Count" : 2 },
-    { "Adr" : "http://localhost:8085", "Count" : 2 },
     { "Adr" : "http://www.example.com", "Count" : 1 }
   ]
 }' \
- 'http://localhost:8083/config'
+ 'http://localhost:8081/config'
 
 curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
 '{
   "Callees" : [
-    { "Adr" : "http://localhost:8086", "Count" : 2 },
+    { "Adr" : "http://localhost:8085", "Count" : 2 },
     { "Adr" : "http://www.example.com", "Count" : 1 }
   ]
 }' \
- 'http://localhost:8085/config'
+ 'http://localhost:8084/config'
