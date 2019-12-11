@@ -1,3 +1,10 @@
+pkill customerAPI 
+pkill sideService
+pkill calcService
+pkill restService
+pkill recomService
+pkill modelService 
+
 sleep 5
 
 cp ../../demoservice customerAPI
@@ -38,7 +45,7 @@ curl -i -X POST \
     { "Adr" : "http://www.example.com", "Count" : 1 }
   ]
 }' \
- 'http://localhost:8084/config'
+ 'http://localhost:8083/config'
 
 curl -i -X POST \
    -H "Content-Type:application/json" \
