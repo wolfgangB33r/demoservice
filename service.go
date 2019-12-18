@@ -140,6 +140,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		message = "Finally returned " + message
 		w.Write([]byte(message))
 	}
+	log.Println("received a new service call")
 	defer r.Body.Close()
 }
 
