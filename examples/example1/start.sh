@@ -14,7 +14,7 @@ cp ../../demoservice restService
 cp ../../demoservice recomService
 cp ../../demoservice modelService
 
-./customerAPI 8080 >log.log&
+./customerAPI 8080 2>>customerapi.log &
 ./sideService 8081&
 ./calcService 8082&
 ./restService 8083&
