@@ -76,6 +76,7 @@ func handleIcon(w http.ResponseWriter, r *http.Request) {
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
+	log.Println("received a new service call")
 	reqcount++
 	fmt.Fprintf(w, "What I did %d:\n", reqcount)
 	// first call all callees we have in the config with the multiplicity given
@@ -140,7 +141,6 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		message = "Finally returned " + message
 		w.Write([]byte(message))
 	}
-	log.Println("received a new service call")
 	defer r.Body.Close()
 }
 
