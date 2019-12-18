@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -60,8 +61,10 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(body, &conf)
 		if err != nil {
 			fmt.Printf("Config payload wrong")
+			log.Println("config payload is wrong")
 			panic(err)
 		}
+		log.Println("received a new service config")
 	default:
 		fmt.Fprintf(w, "Sorry, only POST method is supported.")
 	}
@@ -103,6 +106,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(time.Duration(conf.SlowdownConfig.SlowdownMillis) * time.Millisecond)
 		conf.SlowdownConfig.Count = conf.SlowdownConfig.Count - 1
 		fmt.Fprintf(w, "Sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
+		log.Println("slow service call")
 	}
 	// then check if we should increase resource consumption
 	if conf.ResourceConfig.Severity != 0 && conf.ResourceConfig.Count > 0 {
@@ -116,6 +120,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(w, "Allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
 		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
+		log.Println("high resource consumption service call")
 	}
 	// then check if the should return an error response code
 	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
@@ -128,6 +133,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(w, "Returned an error response code\n")
 		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1
+		log.Println("failed service call")
 	} else {
 		message := r.URL.Path
 		message = strings.TrimPrefix(message, "/")
