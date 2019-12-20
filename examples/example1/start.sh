@@ -14,12 +14,12 @@ cp ../../demoservice restService
 cp ../../demoservice recomService
 cp ../../demoservice modelService
 
-./customerAPI 8080 2>>customerapi.log &
-./sideService 8081&
-./calcService 8082&
-./restService 8083&
-./recomService 8084&
-./modelService 8085&
+./customerAPI 8080 > customerapi.log 2>&1 &
+./sideService 8081 > sideservice.log 2>&1 &
+./calcService 8082 > calcservice.log 2>&1 &
+./restService 8083 > restservice.log 2>&1 &
+./recomService 8084 > recomservice.log 2>&1 &
+./modelService 8085 > modelservice.log 2>&1 &
 
 sleep 5
 
