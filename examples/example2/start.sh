@@ -1,7 +1,7 @@
 echo Killing all the running example processes
 pkill stockweb 
 pkill stockticker
-pkill authenticationservice
+pkill loginservice
 pkill contentprovider
 pkill database 
 echo Wait 5 seconds before starting processes
@@ -10,14 +10,14 @@ sleep 5
 
 cp ../../demoservice stockweb
 cp ../../demoservice stockticker
-cp ../../demoservice authenticationservice
+cp ../../demoservice loginservice
 cp ../../demoservice contentprovider
 cp ../../demoservice database
 echo copied all demo processes
 
 ./stockweb 9301 > stockweb.log 2>&1 &
 ./stockticker 9302 > stockticker.log 2>&1 &
-./authenticationservice 9303 > authenticationservice.log 2>&1 &
+./loginservice 9303 > loginservice.log 2>&1 &
 ./contentprovider 9304 > contentprovider.log 2>&1 &
 ./database 9305 > database.log 2>&1 &
 echo started all demo services
@@ -36,7 +36,7 @@ curl -i -X POST \
 }' \
  'http://localhost:9301/config'
 
-echo configured stockweb to call authentication service and stockticker
+echo configured stockweb to call login service and stockticker
 
 curl -i -X POST \
    -H "Content-Type:application/json" \
@@ -61,7 +61,7 @@ curl -i -X POST \
 }' \
  'http://localhost:9303/config'
 
-echo configured authentication service to call the database
+echo configured login service to call the database
 
 curl -i -X POST \
    -H "Content-Type:application/json" \
