@@ -1,8 +1,10 @@
+echo Killing all the running example processes
 pkill stockweb 
 pkill stockticker
 pkill authenticationservice
 pkill contentprovider
 pkill database 
+echo Wait 5 seconds before starting processes
 
 sleep 5
 
@@ -11,12 +13,14 @@ cp ../../demoservice stockticker
 cp ../../demoservice authenticationservice
 cp ../../demoservice contentprovider
 cp ../../demoservice database
+echo copied all demo processes
 
 ./stockweb 9301 > stockweb.log 2>&1 &
 ./stockticker 9302 > stockticker.log 2>&1 &
 ./authenticationservice 9303 > authenticationservice.log 2>&1 &
 ./contentprovider 9304 > contentprovider.log 2>&1 &
 ./database 9305 > database.log 2>&1 &
+echo started all demo services
 
 sleep 5
 
@@ -32,6 +36,8 @@ curl -i -X POST \
 }' \
  'http://localhost:9301/config'
 
+echo configured stockweb to call authentication service and stockticker
+
 curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
@@ -43,6 +49,8 @@ curl -i -X POST \
 }' \
  'http://localhost:9302/config'
 
+echo configured stockticker to call authetication service and content service
+
 curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
@@ -53,6 +61,8 @@ curl -i -X POST \
 }' \
  'http://localhost:9303/config'
 
+echo configured authentication service to call the database
+
 curl -i -X POST \
    -H "Content-Type:application/json" \
    -d \
@@ -62,3 +72,5 @@ curl -i -X POST \
   ]
 }' \
  'http://localhost:9304/config'
+
+echo configured the content service to call the database
