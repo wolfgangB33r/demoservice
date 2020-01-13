@@ -5,7 +5,7 @@ curl -i -X POST \
 '{
   "SlowdownConfig" : {
     "SlowdownMillis" : 50,
-    "Count" : 3000
+    "Count" : 5000
   },
   "Callees" : [
   ]
