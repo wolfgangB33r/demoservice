@@ -107,7 +107,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(time.Duration(conf.SlowdownConfig.SlowdownMillis) * time.Millisecond)
 		conf.SlowdownConfig.Count = conf.SlowdownConfig.Count - 1
 		fmt.Fprintf(w, "Sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
-		log.Println("slow service call")
+		log.Printf("warning: slow service call: %d ms\n", conf.SlowdownConfig.SlowdownMillis)
 	}
 	// then check if we should increase resource consumption
 	if conf.ResourceConfig.Severity != 0 && conf.ResourceConfig.Count > 0 {
