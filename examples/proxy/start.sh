@@ -36,7 +36,9 @@ curl -i -X POST \
 '{
   "Callees" : [
     { "Adr" : "http://localhost:8499", "Count" : 1 }
-  ]
+  ],
+  ,
+  "Proxy" : true
 }' \
  'http://localhost:8498/config'
 
