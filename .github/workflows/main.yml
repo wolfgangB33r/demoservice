@@ -34,9 +34,9 @@ jobs:
       # Fetches all necessary go packages and builds the project
       - name: Build
         run: |
-          go build
+          go build -o demoservice
           
-      - name: Upload TabShop app bundle
+      - name: Upload executables
         id: uploadArtifact
         uses: actions/upload-artifact@v1
         with:
