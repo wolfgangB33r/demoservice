@@ -44,6 +44,7 @@ type config struct {
 	ResourceConfig resourceAnomalyConfig
 	Callees        []callee
 	Balanced       bool
+	Proxy	       bool	
 }
 
 var conf config
