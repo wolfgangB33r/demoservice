@@ -92,11 +92,10 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 				}
 				if conf.Proxy {
 					log.Printf("dt header: %s ", r.Header.Get("X-Dynatrace"))
-					log.Printf("x-real-ip: %s ", r.Header.Get("X-REAL-IP"))
+					log.Printf("RemoteAddr: %s ", r.RemoteAddr)
 					req.Header.Set("X-Dynatrace", r.Header.Get("X-Dynatrace"))
-					req.Header.Set("client-ip", r.Header.Get("X-REAL-IP"))
-					req.Header.Set("x-forwarded-for", r.Header.Get("X-REAL-IP"))
-					req.Header.Set("forwarded", r.Header.Get("X-REAL-IP"))	
+					req.Header.Set("x-forwarded-for", r.RemoteAddr)
+					req.Header.Set("forwarded", r.RemoteAddr)	
 				}
 				req.Header.Set("Cache-Control", "no-cache")
 
