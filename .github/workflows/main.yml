@@ -35,4 +35,11 @@ jobs:
       - name: Build
         run: |
           go build
+          
+      - name: Upload TabShop app bundle
+        id: uploadArtifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: demoservice
+          path: ./demoservice  
       
