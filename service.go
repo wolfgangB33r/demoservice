@@ -83,8 +83,6 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	// first call all callees we have in the config with the multiplicity given
 	failures := false
 
-	traceheader := r.Header.Get("X-Dynatrace")
-
 	for ci, element := range conf.Callees {
 		if !conf.Balanced || reqcount%len(conf.Callees) == ci {
 			for i := 0; i < element.Count; i++ {
@@ -92,7 +90,14 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Fatal("error reading request. ", err)
 				}
-				req.Header.Set("X-Dynatrace", traceheader)
+				if conf.Proxy {
+					log.Println("dt header: %s ", r.Header.Get("X-Dynatrace"))
+					log.Println("x-real-ip: %s ", r.Header.Get("X-REAL-IP"))
+					req.Header.Set("X-Dynatrace", r.Header.Get("X-Dynatrace"))
+					req.Header.Set("client-ip", r.Header.Get("X-REAL-IP"))
+					req.Header.Set("x-forwarded-for", r.Header.Get("X-REAL-IP"))
+					req.Header.Set("forwarded", r.Header.Get("X-REAL-IP"))	
+				}
 				req.Header.Set("Cache-Control", "no-cache")
 
 				client := &http.Client{Timeout: time.Second * 10}
