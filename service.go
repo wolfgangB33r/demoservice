@@ -148,7 +148,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		if conf.ErrorConfig.ResponseCode == 400 {
 			w.WriteHeader(http.StatusForbidden)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1
 	} else {
