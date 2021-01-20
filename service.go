@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -44,7 +45,7 @@ type config struct {
 	ResourceConfig resourceAnomalyConfig
 	Callees        []callee
 	Balanced       bool
-	Proxy	       bool	
+	Proxy          bool
 }
 
 var conf config
@@ -77,9 +78,10 @@ func handleIcon(w http.ResponseWriter, r *http.Request) {
 }
 
 func sayHello(w http.ResponseWriter, r *http.Request) {
+	var buf bytes.Buffer
 	reqcount++
-	fmt.Fprintf(w, "it's the %d call\n", reqcount)
-	fmt.Fprintf(w, "what I did:\n")
+	fmt.Fprintf(&buf, "it's the %d call\n", reqcount)
+	fmt.Fprintf(&buf, "what I did:\n")
 	// first call all callees we have in the config with the multiplicity given
 	failures := false
 
@@ -95,7 +97,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 					log.Printf("RemoteAddr: %s ", r.RemoteAddr)
 					req.Header.Set("X-Dynatrace", r.Header.Get("X-Dynatrace"))
 					req.Header.Set("x-forwarded-for", r.RemoteAddr)
-					req.Header.Set("forwarded", r.RemoteAddr)	
+					req.Header.Set("forwarded", r.RemoteAddr)
 				}
 				req.Header.Set("Cache-Control", "no-cache")
 
@@ -106,12 +108,13 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 					log.Fatal("error reading response. ", err)
 				} else {
 					if resp.StatusCode != 200 {
+						log.Println("got a bad return")
 						failures = true
 					}
 				}
 				defer resp.Body.Close()
 			}
-			fmt.Fprintf(w, "called %s %d times\n", element.Adr, element.Count)
+			fmt.Fprintf(&buf, "called %s %d times\n", element.Adr, element.Count)
 		}
 	}
 	// then check if we should crash the process
@@ -124,7 +127,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	if conf.SlowdownConfig.SlowdownMillis != 0 && conf.SlowdownConfig.Count > 0 {
 		time.Sleep(time.Duration(conf.SlowdownConfig.SlowdownMillis) * time.Millisecond)
 		conf.SlowdownConfig.Count = conf.SlowdownConfig.Count - 1
-		fmt.Fprintf(w, "sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
+		fmt.Fprintf(&buf, "sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
 	}
 	// then check if we should increase resource consumption
 	if conf.ResourceConfig.Severity != 0 && conf.ResourceConfig.Count > 0 {
@@ -136,7 +139,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		fmt.Fprintf(w, "allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
+		fmt.Fprintf(&buf, "allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
 		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
 		log.Println("high resource consumption service call")
 	}
@@ -144,12 +147,9 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
 		if conf.ErrorConfig.ResponseCode == 400 {
 			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("400 - Forbidden!"))
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - Something bad happened!"))
+			w.WriteHeader(http.StatusBadRequest)
 		}
-		fmt.Fprintf(w, "returned an error response code\n")
 		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1
 	} else {
 		message := r.URL.Path
