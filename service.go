@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bytes"
+	// "bytes"
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -51,6 +51,35 @@ type config struct {
 var conf config
 var reqcount int
 
+func readEnvConfig() {
+
+	conf.ErrorConfig.ResponseCode, _ = strconv.Atoi(os.Getenv("ErrorConfig_ResponseCode"))
+	conf.ErrorConfig.Count, _ = strconv.Atoi(os.Getenv("ErrorConfig_Count"))
+
+	conf.SlowdownConfig.SlowdownMillis, _ = strconv.Atoi(os.Getenv("SlowdownConfig_SlowdownMillis"))
+	conf.SlowdownConfig.Count, _ = strconv.Atoi(os.Getenv("SlowdownConfig_Count"))
+
+	conf.CrashConfig.Code, _ = strconv.Atoi(os.Getenv("CrashConfig_Code"))
+
+	conf.ResourceConfig.Severity, _ = strconv.Atoi(os.Getenv("ResourceConfig_Severity"))
+	conf.ResourceConfig.Count, _ = strconv.Atoi(os.Getenv("ResourceConfig_Count"))
+
+	var callee_adr = strings.Split(os.Getenv("Callees_Adr"), ",")
+	var callee_count = strings.Split(os.Getenv("Callees_Count"), ",")
+
+	if len(callee_adr) > 0 {
+		callee_array := make([]callee, len(callee_adr))	
+
+		for i := range callee_adr {
+			callee_array[i].Adr = callee_adr[i]
+			callee_array[i].Count, _ = strconv.Atoi(callee_count[i])
+		}
+		conf.Callees = callee_array
+	}
+	// os.Getenv(service.callee.Balanced)
+	// os.Getenv(service.callee.Proxy)
+}
+
 func receiveConfig(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
@@ -59,29 +88,33 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		//fmt.Printf(string(body))
+		//log.Printf(string(body))
 		err = json.Unmarshal(body, &conf)
 		if err != nil {
-			fmt.Printf("config payload wrong")
-			log.Println("config payload is wrong")
+			log.Printf("config payload is wrong")
 			panic(err)
 		}
-		log.Println("received a new service config deployment")
+		log.Printf("received a new service config deployment")
 	default:
-		fmt.Fprintf(w, "sorry, only POST method is supported.")
+		log.Printf("sorry, only POST method is supported.")
 	}
 	defer r.Body.Close()
 }
 
 func handleIcon(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "favicon.ico")
+}
+
+func healthz(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 	defer r.Body.Close()
 }
 
+
 func sayHello(w http.ResponseWriter, r *http.Request) {
-	var buf bytes.Buffer
 	reqcount++
-	fmt.Fprintf(&buf, "it's the %d call\n", reqcount)
-	fmt.Fprintf(&buf, "what I did:\n")
+	log.Printf("it's the %d call\n", reqcount)
+	log.Printf("what I did:\n")
 	// first call all callees we have in the config with the multiplicity given
 	failures := false
 
@@ -108,13 +141,13 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 					log.Fatal("error reading response. ", err)
 				} else {
 					if resp.StatusCode != 200 {
-						log.Println("got a bad return")
+						log.Printf("got a bad return")
 						failures = true
 					}
 				}
 				defer resp.Body.Close()
 			}
-			fmt.Fprintf(&buf, "called %s %d times\n", element.Adr, element.Count)
+			log.Printf("called %s %d times\n", element.Adr, element.Count)
 		}
 	}
 	// then check if we should crash the process
@@ -127,7 +160,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	if conf.SlowdownConfig.SlowdownMillis != 0 && conf.SlowdownConfig.Count > 0 {
 		time.Sleep(time.Duration(conf.SlowdownConfig.SlowdownMillis) * time.Millisecond)
 		conf.SlowdownConfig.Count = conf.SlowdownConfig.Count - 1
-		fmt.Fprintf(&buf, "sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
+		log.Printf("sleeped for %d millis\n", conf.SlowdownConfig.SlowdownMillis)
 	}
 	// then check if we should increase resource consumption
 	if conf.ResourceConfig.Severity != 0 && conf.ResourceConfig.Count > 0 {
@@ -139,9 +172,9 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		fmt.Fprintf(&buf, "allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
+		log.Printf("allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
 		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
-		log.Println("high resource consumption service call")
+		log.Printf("high resource consumption service call")
 	}
 	// then check if the should return an error response code
 	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
@@ -164,18 +197,22 @@ func main() {
 	port := 8080
 	if len(os.Args) > 1 {
 		arg := os.Args[1]
-		fmt.Printf("Start demo service at port: %s\n", arg)
+		log.Printf("Start demo service at port: %s\n", arg)
 		i1, err := strconv.Atoi(arg)
 		if err == nil {
 			port = i1
 		}
 	} else {
-		fmt.Printf("Start demo service at default port: %d\n", port)
+		log.Printf("Start demo service at default port: %d\n", port)
 	}
+	readEnvConfig()
 
 	http.HandleFunc("/", sayHello)
 	http.HandleFunc("/favicon.ico", handleIcon)
 	http.HandleFunc("/config", receiveConfig)
+	
+	http.HandleFunc("/healthz", healthz)
+
 	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		panic(err)
 	}

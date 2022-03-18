@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen
+spec:
+  selector:
+    matchLabels:
+      app: loadgen
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      containers:
+      - name: loadgen
+        image: alpine/curl:latest
+        resources:
+          requests:
+            cpu: 10m
+            memory: 5Mi
+          limits:
+            cpu: 20m
+            memory: 10Mi
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do curl -ILs -w '%{http_code}' http://demoservice-01:8080; sleep 1;done"]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoservice-01
+spec:
+  selector:
+    matchLabels:
+      app: demoservice-01
+  template:
+    metadata:
+      labels:
+        app: demoservice-01
+    spec:
+      containers:
+      - name: demoservice
+        image: gcr.io/dynatrace-dev-on-demand/florian-demoservice:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: Callees_Adr
+          value: "http://demoservice-02:8080,http://demoservice-03:8080"
+        - name: Callees_Count
+          value: "3,2"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+        livenessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demoservice-01
+spec:
+  type: ClusterIP
+  selector:
+    app: demoservice-01
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoservice-02
+spec:
+  selector:
+    matchLabels:
+      app: demoservice-02
+  template:
+    metadata:
+      labels:
+        app: demoservice-02
+    spec:
+      containers:
+      - name: demoservice
+        image: gcr.io/dynatrace-dev-on-demand/florian-demoservice:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: Callees_Adr
+          value: "http://demoservice-03:8080"
+        - name: Callees_Count
+          value: "1"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+        livenessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demoservice-02
+spec:
+  type: ClusterIP
+  selector:
+    app: demoservice-02
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoservice-03
+spec:
+  selector:
+    matchLabels:
+      app: demoservice-03
+  template:
+    metadata:
+      labels:
+        app: demoservice-03
+    spec:
+      containers:
+      - name: demoservice
+        image: gcr.io/dynatrace-dev-on-demand/florian-demoservice:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 50m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+        livenessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 15
+          httpGet:
+            path: /healthz
+            port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demoservice-03
+spec:
+  type: ClusterIP
+  selector:
+    app: demoservice-03
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
