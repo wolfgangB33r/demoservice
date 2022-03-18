@@ -2,14 +2,15 @@ FROM golang:1.17.5-alpine AS builder
 RUN apk add --no-cache ca-certificates git
 RUN apk add build-base
 
+RUN export GO111MODULE=on
 WORKDIR /src
 COPY favicon.ico .
-# restore dependencies
-COPY go.mod go.sum ./
-# RUN go mod download
-# COPY . .
 
 COPY ./service.go .
+# restore dependencies
+COPY go.mod go.sum ./
+RUN go mod download \
+    && go mod tidy
 
 
 RUN go build -ldflags="-linkmode external" -o /demoservice .

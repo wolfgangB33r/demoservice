@@ -12,6 +12,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type errorAnomalyConfig struct {
@@ -180,18 +183,38 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
 		if conf.ErrorConfig.ResponseCode == 400 {
 			w.WriteHeader(http.StatusForbidden)
+			promHttpResponses.With(prometheus.Labels{"code":"400"}).Inc()
+			promHttpFailures.Inc()
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
+			promHttpResponses.With(prometheus.Labels{"code":"500"}).Inc()
+			promHttpFailures.Inc()
 		}
 		conf.ErrorConfig.Count = conf.ErrorConfig.Count - 1
+		
 	} else {
 		message := r.URL.Path
 		message = strings.TrimPrefix(message, "/")
 		message = "finally returned " + message
 		w.Write([]byte(message))
+		promHttpResponses.With(prometheus.Labels{"code":"200"}).Inc()
 	}
 	defer r.Body.Close()
 }
+
+var (
+	promHttpResponses = promauto.NewCounterVec(prometheus.CounterOpts{
+			Name: "demoservice_http_responses",
+			Help: "The total number of http responses.",
+		},
+		[]string{"code"},
+	)
+	promHttpFailures = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "demoservice_http_failures",
+			Help: "The total number of http failures.",
+		},
+	)
+)
 
 func main() {
 	port := 8080
@@ -202,17 +225,15 @@ func main() {
 		if err == nil {
 			port = i1
 		}
-	} else {
-		log.Printf("Start demo service at default port: %d\n", port)
 	}
 	readEnvConfig()
 
 	http.HandleFunc("/", sayHello)
 	http.HandleFunc("/favicon.ico", handleIcon)
 	http.HandleFunc("/config", receiveConfig)
-	
+	http.Handle("/metrics", promhttp.Handler()) 
 	http.HandleFunc("/healthz", healthz)
-
+	log.Printf("Start demo service at default port: %d\n", port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		panic(err)
 	}
