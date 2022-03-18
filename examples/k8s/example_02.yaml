@@ -22,21 +22,21 @@ spec:
             cpu: 20m
             memory: 10Mi
         command: ["/bin/sh"]
-        args: ["-c", "while true; do curl -ILs -w '%{http_code}' http://demoservice-01:8080; sleep 1;done"]
+        args: ["-c", "while true; do curl -ILs -m 5 -w '%{http_code}' http://demoservice-one:8080; sleep 1;done"]
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demoservice-01
+  name: demoservice-one
 spec:
   selector:
     matchLabels:
-      app: demoservice-01
+      app: demoservice-one
   template:
     metadata:
       labels:
-        app: demoservice-01
+        app: demoservice-one
     spec:
       containers:
       - name: demoservice
@@ -45,7 +45,7 @@ spec:
         - containerPort: 8080
         env:
         - name: Callees_Adr
-          value: "http://demoservice-02:8080,http://demoservice-03:8080"
+          value: "http://demoservice-two:8080,http://demoservice-three:8080"
         - name: Callees_Count
           value: "3,2"
         resources:
@@ -71,11 +71,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demoservice-01
+  name: demoservice-one
 spec:
   type: ClusterIP
   selector:
-    app: demoservice-01
+    app: demoservice-one
   ports:
   - name: http
     port: 8080
@@ -85,15 +85,15 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demoservice-02
+  name: demoservice-two
 spec:
   selector:
     matchLabels:
-      app: demoservice-02
+      app: demoservice-two
   template:
     metadata:
       labels:
-        app: demoservice-02
+        app: demoservice-two
     spec:
       containers:
       - name: demoservice
@@ -102,7 +102,7 @@ spec:
         - containerPort: 8080
         env:
         - name: Callees_Adr
-          value: "http://demoservice-03:8080"
+          value: "http://demoservice-three:8080"
         - name: Callees_Count
           value: "1"
         resources:
@@ -128,11 +128,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demoservice-02
+  name: demoservice-two
 spec:
   type: ClusterIP
   selector:
-    app: demoservice-02
+    app: demoservice-two
   ports:
   - name: http
     port: 8080
@@ -142,15 +142,15 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demoservice-03
+  name: demoservice-three
 spec:
   selector:
     matchLabels:
-      app: demoservice-03
+      app: demoservice-three
   template:
     metadata:
       labels:
-        app: demoservice-03
+        app: demoservice-three
     spec:
       containers:
       - name: demoservice
@@ -180,11 +180,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: demoservice-03
+  name: demoservice-three
 spec:
   type: ClusterIP
   selector:
-    app: demoservice-03
+    app: demoservice-three
   ports:
   - name: http
     port: 8080
