@@ -1,9 +1,7 @@
-pkill customerAPI 
-pkill sideService
-pkill calcService
-pkill restService
-pkill recomService
-pkill modelService 
+pkill paymentService 
+pkill authenticationService
+pkill persistanceService
+pkill riskAssessmentService
 
 sleep 5
 
