@@ -9,4 +9,4 @@ curl -i -X POST \
   "Callees" : [
   ]
 }' \
- 'http://localhost:8006/config'
+ 'http://localhost:8083/config'
