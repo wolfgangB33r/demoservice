@@ -3,8 +3,8 @@ curl -i -X POST \
    -d \
 '{
   "ErrorConfig" : {
-    ResponseCode 500
-	  Count        10
+    "ResponseCode" : 500,
+    "Count": 100
   },
   "Callees" : [
   ]
