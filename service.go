@@ -63,10 +63,10 @@ func receiveConfig(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(body, &conf)
 		if err != nil {
 			fmt.Printf("config payload wrong")
-			log.Println("config payload is wrong")
+			log.Printf("%s config payload is wrong", os.Args[0])
 			panic(err)
 		}
-		log.Println("received a new service config deployment")
+		log.Printf("%s received a new service config deployment",  os.Args[0])
 	default:
 		fmt.Fprintf(w, "sorry, only POST method is supported.")
 	}
@@ -90,11 +90,13 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 			for i := 0; i < element.Count; i++ {
 				req, err := http.NewRequest("GET", element.Adr, nil)
 				if err != nil {
-					log.Fatal("error reading request. ", err)
+					// os.Args[0] to get the current exe name
+					log.Printf("%s error reading request.", os.Args[0])
+					os.Exit(1)
 				}
 				if conf.Proxy {
-					log.Printf("dt header: %s ", r.Header.Get("X-Dynatrace"))
-					log.Printf("RemoteAddr: %s ", r.RemoteAddr)
+					log.Printf("%s dt header: %s ", os.Args[0], r.Header.Get("X-Dynatrace"))
+					log.Printf("%s RemoteAddr: %s ", os.Args[0], r.RemoteAddr)
 					req.Header.Set("X-Dynatrace", r.Header.Get("X-Dynatrace"))
 					req.Header.Set("x-forwarded-for", r.RemoteAddr)
 					req.Header.Set("forwarded", r.RemoteAddr)
@@ -105,10 +107,11 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 
 				resp, err := client.Do(req)
 				if err != nil {
-					log.Fatal("error reading response. ", err)
+					log.Printf("%s error reading response.", os.Args[0])
+					os.Exit(1)
 				} else {
 					if resp.StatusCode != 200 {
-						log.Println("got a bad return")
+						log.Printf("%s got a bad return", os.Args[0])
 						failures = true
 					}
 				}
@@ -119,9 +122,8 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 	}
 	// then check if we should crash the process
 	if conf.CrashConfig.Code != 0 {
-		//log.Fatalf("Exiting")
+		log.Printf("%s cashed.", os.Args[0])
 		panic("a problem")
-		//os.Exit(conf.CrashConfig.Code)
 	}
 	// then check if we should add a delay
 	if conf.SlowdownConfig.SlowdownMillis != 0 && conf.SlowdownConfig.Count > 0 {
@@ -141,7 +143,7 @@ func sayHello(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Fprintf(&buf, "allocated %d 100x100 matrices with random values\n", conf.ResourceConfig.Severity)
 		conf.ResourceConfig.Count = conf.ResourceConfig.Count - 1
-		log.Println("high resource consumption service call")
+		log.Printf("%s high resource consumption service call", os.Args[0])
 	}
 	// then check if the should return an error response code
 	if failures || (conf.ErrorConfig.ResponseCode != 0 && conf.ErrorConfig.Count > 0) {
