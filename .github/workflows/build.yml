@@ -1,12 +1,10 @@
 # Workflow for building the demo service
 
-name: CI
+name: Build Service
 
 # Controls when the action will run. 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -23,13 +21,14 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up Go 1.14
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.14
+      - name: Set up Go
         id: go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+          cache: false
 
       # Fetches all necessary go packages and builds the project
       - name: Build
