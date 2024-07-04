@@ -32,7 +32,7 @@ Push a http POST request to /config on your started service.
 Count always represents the number of service requests that suffer from that anomaly, e.g.: a count of 5 means the next 5 service requests are affected.
 A crash anomaly kills the service process with the given exit code. The resource anomaly allocates a matrix of 100x100 elements multiplied by the given severity. 
 Callees let you specify the callees this service calls with each service request. Specifying callees allows you to build dynamic multi-level service call trees.
-In case the attribute 'Balanced' is set to 'true', the callees are equally iterated with each request. 
+In case the attribute 'Balanced' is set to 'true', the callees are equally iterated with each request.
 
 ```json
 {
