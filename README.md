@@ -1,6 +1,6 @@
 # Generic demo service
 
-Purpose of this service is to simulate specific anomaly situations, such as:
+Purpose of this service is to simulate specific anomaly situations, such as: 
 
 - Slowdowns
 - Failures
